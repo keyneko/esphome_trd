@@ -1,0 +1,70 @@
+esphome:
+  name: esp8266-ssd1306
+  friendly_name: esp8266_ssd1306
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "c6o2V9Hze13pYU82hhLxq2j1uuYa+Q0LgTYCThdWUpE="
+
+ota:
+  password: "5f783f3da0bbc6dd03eb2f626a792b06"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp8266-Ssd1306 Fallback Hotspot"
+    password: "Wk1qfBKR9SAP"
+
+captive_portal:
+    
+i2c:
+  sda: GPIO14
+  scl: GPIO12
+  scan: False
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    id: my_display
+    update_interval: 10s
+    lambda: |-
+      it.print(0, 0, id(font1), "Hello ESPHome!");
+      it.printf(0, 15, id(font1), "IP: %s", WiFi.localIP().toString().c_str());
+      // if (!id(ha_text_input).state.empty()) {
+      //   // 手动换行
+      //   std::string text = id(ha_text_input).state;
+      //   int line_length = 21; // 根据你的显示和字体大小调整这个值
+      //   int line_height = 14; // 根据你的字体大小调整这个值
+      //   for (int i = 0; i < text.length(); i += line_length) {
+      //     std::string line = text.substr(i, line_length);
+      //     it.print(0, 30 + (i / line_length * line_height), id(font1), line.c_str());
+      //   }
+      // }
+
+interval:
+  - interval: 1min
+    then:
+      - component.update: my_display
+
+font:
+  - file: "fonts/Roboto-Medium.ttf"
+    id: font1
+    size: 14
+
+text_sensor:
+  - platform: homeassistant
+    name: "HA Text Input"
+    id: ha_text_input
+    entity_id: "input_text.oled_text"

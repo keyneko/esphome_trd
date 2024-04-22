@@ -1,0 +1,88 @@
+esphome:
+  name: esp8266-cover
+  friendly_name: esp8266_cover
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "57NlSTb7fXobtf1h6vhppuLQawuNHhBMWiZsg+0B/Uw="
+
+ota:
+  password: "87ab9e7997d56f940cb20aca43e664b3"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp8266-Cover Fallback Hotspot"
+    password: "Hznz58Ndxuxn"
+
+captive_portal:
+    
+cover:
+  - platform: template
+    name: "Smart Curtain"
+    open_action:
+      - switch.turn_on: curtain_open
+    close_action:
+      - switch.turn_on: curtain_close
+    stop_action:
+      - switch.turn_off: curtain_open
+      - switch.turn_off: curtain_close
+    optimistic: true
+
+# switch:
+#   - platform: gpio
+#     pin: D1
+#     name: "Curtain Open"
+#     id: curtain_open
+#   - platform: gpio
+#     pin: D2
+#     name: "Curtain Close"
+#     id: curtain_close
+
+binary_sensor:
+  - platform: gpio
+    pin: D3
+    name: "Curtain Open Limit Switch"
+    id: curtain_open_limit_switch
+    on_state:
+      then:
+        - switch.turn_off: curtain_open
+  - platform: gpio
+    pin: D4
+    name: "Curtain Close Limit Switch"
+    id: curtain_close_limit_switch
+    on_state:
+      then:
+        - switch.turn_off: curtain_close
+
+switch:
+  - platform: gpio
+    pin: D1
+    name: "Curtain Open"
+    id: curtain_open
+    on_turn_on:
+      - if:
+          condition:
+            binary_sensor.is_on: curtain_open_limit_switch
+          then:
+            - switch.turn_off: curtain_open
+  - platform: gpio
+    pin: D2
+    name: "Curtain Close"
+    id: curtain_close
+    on_turn_on:
+      - if:
+          condition:
+            binary_sensor.is_on: curtain_close_limit_switch
+          then:
+            - switch.turn_off: curtain_close

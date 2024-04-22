@@ -1,0 +1,92 @@
+esphome:
+  name: esp8266-keypad
+  friendly_name: esp8266_keypad
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+
+# Enable web server
+web_server:
+  port: 80
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "YrbtQ+MYr+utyL+X1w0yJsX0RrNN7xmy8L1Th5xc2Jc="
+
+ota:
+  password: "bfc6e0403759bf153257440bdbf21838"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp8266-Keypad Fallback Hotspot"
+    password: "sxKM079N5NCl"
+
+captive_portal:
+
+i2c:
+  sda: D5
+  scl: D6
+  scan: True
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    id: my_display
+    lambda: |-
+      // Default display content
+      it.print(0, 0, id(font1), "Hello ESPHome!");
+
+font:
+  - file: "fonts/Roboto-Medium.ttf"
+    id: font1
+    size: 14
+
+matrix_keypad:
+  id: mykeypad
+  rows:
+    - pin: D1
+    - pin: D2
+    - pin: D3
+    - pin: D4
+  columns:
+    - pin: D7
+    - pin: D8
+    - pin: RX
+    - pin: TX
+  keys: "123A456B789C*0#D"
+  has_diodes: false
+
+key_collector:
+  - id: pincode_reader
+    source_id: mykeypad
+    min_length: 4
+    max_length: 4
+    end_keys: "#"
+    end_key_required: true
+    back_keys: "*"
+    clear_keys: "C"
+    allowed_keys: "0123456789"
+    timeout: 5s
+    on_progress:
+      - logger.log:
+          format: "input progress: '%s', started by '%c'"
+          args: [ 'x.c_str()', "(start == 0 ? '~' : start)" ]
+    on_result:
+      - lambda: |-
+          id(my_display).print(0, 16, id(font1), x.c_str());
+      - logger.log:
+          format: "input result: '%s', started by '%c', ended by '%c'"
+          args: [ 'x.c_str()', "(start == 0 ? '~' : start)", "(end == 0 ? '~' : end)" ]
+    on_timeout:
+      - logger.log:
+          format: "input timeout: '%s', started by '%c'"
+          args: [ 'x.c_str()', "(start == 0 ? '~' : start)" ]
