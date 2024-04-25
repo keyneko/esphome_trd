@@ -61,3 +61,16 @@ https://www.paofusub2.com/link/fSiVabs8n3yOg1Dc?sub=1
 crash -h
 crash -u
 ```
+
+# 升级node
+```bash
+sudo apt update
+sudo apt upgrade
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+source ~/.bashrc
+nvm ls-remote
+nvm install 14.17.6
+nvm alias default 14.17.6
+node -v
+npm -v
+```
