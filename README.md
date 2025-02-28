@@ -74,3 +74,13 @@ nvm alias default 14.17.6
 node -v
 npm -v
 ```
+
+
+# 蒲公英访问端
+```bash
+sudo docker pull bestoray/pgyvpn
+sudo docker run -d --device=/dev/net/tun --net=host --cap-add=NET_ADMIN \
+  --env PGY_USERNAME="8687542:003" \
+  --env PGY_PASSWORD="kr3PbHJTekr5kFj" \
+  bestoray/pgyvpn
+```
